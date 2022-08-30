@@ -99,13 +99,10 @@ public class MainActivity extends AppCompatActivity {
 
         private void showResultImages() {
             pictureAdapter = new PictureAdapter(10, pictures);
-            System.out.println("adapter created");
             picturesList.setAdapter(pictureAdapter);
-            System.out.println("adapter assigned");
         }
 
         private Picture getPictureEntity(JSONObject jsonObject) throws JSONException {
-            System.out.println("Getting picture entity");
             JSONObject userObject = jsonObject.getJSONObject("user");
             String author = userObject.getString("first_name") + " " + userObject.getString("last_name");
             JSONObject urlsObject = jsonObject.getJSONObject("urls");
@@ -118,7 +115,6 @@ public class MainActivity extends AppCompatActivity {
         }
 
         private Picture[] convertJsonToPictureArray(JSONArray jsonArray) throws JSONException {
-            System.out.println("Json Array size is: " + jsonArray.length());
             Picture[] pictures = new Picture[jsonArray.length()];
             for(int i = 0; i<jsonArray.length(); i++){
                 pictures[i] = getPictureEntity(jsonArray.getJSONObject(i));

@@ -1,6 +1,7 @@
 package com.gallery.unsplashapp;
 
 import android.content.Context;
+import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.os.AsyncTask;
@@ -16,6 +17,7 @@ import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.gallery.unsplashapp.entity.Picture;
+import com.gallery.unsplashapp.utils.DownloadHandler;
 
 import java.io.InputStream;
 import java.util.concurrent.ExecutionException;
@@ -76,40 +78,27 @@ public class PictureAdapter extends RecyclerView.Adapter<PictureAdapter.PictureV
             super(itemView);
 
             ownerName = itemView.findViewById(R.id.tv_owner_name);
-            ownerName.setText("Owner");
             smallPicture = itemView.findViewById(R.id.iv_small_picture);
+            itemView.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    Context context = itemView.getContext();
+                    int positionIndex = getAdapterPosition();
+
+                    Class destination = ChildActivity.class;
+
+                    Intent fullSizeIntent = new Intent(context, destination);
+                    fullSizeIntent.putExtra(Intent.EXTRA_REFERRER, pictures[positionIndex].getLinkToBigSize());
+
+                    context.startActivity(fullSizeIntent);
+                }
+            });
         }
 
         void bind(int listIndex) throws ExecutionException, InterruptedException {
             ownerName.setText(pictures[listIndex].getAuthor());
-            smallPicture.setImageBitmap(new DownloadHandler(smallPicture).execute(pictures[listIndex].getLinkToSmallSize()).get());
-        }
-    }
-
-    class DownloadHandler extends AsyncTask<String, Void, Bitmap> {
-        ImageView imageView;
-
-        public DownloadHandler(ImageView imageView) {
-            this.imageView = imageView;
-            //Toast.makeText(getApplicationContext(), "Please wait, it may take a few seconds...",Toast.LENGTH_SHORT).show();
-        }
-
-        protected Bitmap doInBackground(String... urls) {
-            System.out.println("Download has been started...");
-            String imageURL = urls[0];
-            Bitmap bimage = null;
-            try {
-                InputStream in = new java.net.URL(imageURL).openStream();
-                bimage = BitmapFactory.decodeStream(in);
-            } catch (Exception e) {
-                //Log.e("Error Message", e.getMessage());
-                e.printStackTrace();
-            }
-            return bimage;
-        }
-
-        protected void onPostExecute(Bitmap result) {
-            imageView.setImageBitmap(result);
+//            smallPicture.setImageBitmap(new DownloadHandler(smallPicture).execute(pictures[listIndex].getLinkToSmallSize()).get());
+            new DownloadHandler(smallPicture).execute(pictures[listIndex].getLinkToSmallSize());
         }
     }
 }

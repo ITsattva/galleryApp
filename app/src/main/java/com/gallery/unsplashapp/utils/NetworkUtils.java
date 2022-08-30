@@ -25,7 +25,7 @@ public class NetworkUtils {
                 .buildUpon()
                 .appendQueryParameter(PARAM_CLIENT_ID, CLIENT_ID)
                 .appendQueryParameter(PARAM_QUERY, query)
-                .appendQueryParameter(PARAM_PER_PAGE, "10")
+                .appendQueryParameter(PARAM_PER_PAGE, "100")
                 .appendQueryParameter(PARAM_PAGE, "1")
                 .build();
 

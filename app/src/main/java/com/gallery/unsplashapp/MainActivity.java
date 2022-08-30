@@ -7,17 +7,15 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.os.AsyncTask;
 import android.os.Bundle;
-import android.util.Log;
+import android.view.TextureView;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
-import android.widget.ImageView;
-import android.widget.Toast;
+import android.widget.TextView;
 
+import com.gallery.unsplashapp.adapters.PictureAdapter;
 import com.gallery.unsplashapp.entity.Picture;
 
 import org.json.JSONArray;
@@ -25,7 +23,6 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.IOException;
-import java.io.InputStream;
 import java.net.URL;
 
 public class MainActivity extends AppCompatActivity {
@@ -33,6 +30,7 @@ public class MainActivity extends AppCompatActivity {
     RecyclerView picturesList;
     PictureAdapter pictureAdapter;
     EditText searchField;
+    TextView errorMessage;
     Button searchButton;
     Picture[] pictures;
 
@@ -44,11 +42,11 @@ public class MainActivity extends AppCompatActivity {
         picturesList = findViewById(R.id.rv_pictures);
         searchField = findViewById(R.id.et_search_field);
         searchButton = findViewById(R.id.b_search);
+        errorMessage = findViewById(R.id.tv_error_message);
 
         LinearLayoutManager layoutManager = new LinearLayoutManager(this);
         picturesList.setLayoutManager(layoutManager);
-        picturesList.setHasFixedSize(true);
-        pictureAdapter = new PictureAdapter(10, new Picture[]{});
+        picturesList.setHasFixedSize(false);
 
         View.OnClickListener onClickListener = new View.OnClickListener() {
             @Override
@@ -77,34 +75,35 @@ public class MainActivity extends AppCompatActivity {
         protected void onPostExecute(String response){
             if(response != null && !response.equals("")) {
                 try {
-                    System.out.println("Getting json object");
                     JSONObject object = new JSONObject(response);
-                    System.out.println("Getting json array");
                     JSONArray array = object.getJSONArray("results");
-                    System.out.println("parsing json array");
                     pictures = convertJsonToPictureArray(array);
                     showResultImages();
                 } catch (JSONException e) {
+                    showErrorTextView();
                     e.printStackTrace();
                 }
-                showResultImages();
             } else {
                 showErrorTextView();
             }
         }
 
         private void showErrorTextView(){
-            //todo
+            errorMessage.setVisibility(View.VISIBLE);
         }
 
         private void showResultImages() {
-            pictureAdapter = new PictureAdapter(10, pictures);
+            errorMessage.setVisibility(View.INVISIBLE);
+            pictureAdapter = new PictureAdapter(100, pictures);
             picturesList.setAdapter(pictureAdapter);
         }
 
         private Picture getPictureEntity(JSONObject jsonObject) throws JSONException {
             JSONObject userObject = jsonObject.getJSONObject("user");
-            String author = userObject.getString("first_name") + " " + userObject.getString("last_name");
+            String firstName = userObject.getString("first_name");
+            String lastName = userObject.getString("last_name");
+
+            String author =  firstName + (lastName.equals("null") ? "" : lastName);
             JSONObject urlsObject = jsonObject.getJSONObject("urls");
             String linkToSmallSize = urlsObject.getString("small");
             String linkToBigSize = urlsObject.getString("full");;

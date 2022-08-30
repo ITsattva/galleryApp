@@ -6,9 +6,19 @@
     android:layout_height="match_parent"
     tools:context=".ChildActivity">
 
+
+    <TextView
+        android:id="@+id/tv_wait_message"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:text="@string/wait_message"
+        android:textSize="32sp" />
+
     <ImageView
         android:id="@+id/iv_big_picture"
+        android:scaleType="fitCenter"
         android:layout_width="wrap_content"
-        android:layout_height="wrap_content"/>
+        android:layout_height="wrap_content" />
 
 </FrameLayout>

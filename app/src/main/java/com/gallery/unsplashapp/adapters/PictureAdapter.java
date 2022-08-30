@@ -1,25 +1,21 @@
-package com.gallery.unsplashapp;
+package com.gallery.unsplashapp.adapters;
 
 import android.content.Context;
 import android.content.Intent;
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
-import android.os.AsyncTask;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.gallery.unsplashapp.ChildActivity;
+import com.gallery.unsplashapp.R;
 import com.gallery.unsplashapp.entity.Picture;
 import com.gallery.unsplashapp.utils.DownloadHandler;
 
-import java.io.InputStream;
 import java.util.concurrent.ExecutionException;
 
 public class PictureAdapter extends RecyclerView.Adapter<PictureAdapter.PictureViewHolder> {
@@ -29,7 +25,7 @@ public class PictureAdapter extends RecyclerView.Adapter<PictureAdapter.PictureV
     private Picture[] pictures;
 
     public PictureAdapter(int numberOfItems, Picture[] pictures) {
-        this.numberOfItems = numberOfItems;
+        this.numberOfItems = pictures.length;
         this.pictures = pictures;
         viewHolderCount = 0;
     }
@@ -43,10 +39,7 @@ public class PictureAdapter extends RecyclerView.Adapter<PictureAdapter.PictureV
         LayoutInflater inflater = LayoutInflater.from(context);
 
         View view = inflater.inflate(layoutIdForPictureListItem, parent, false);
-
         PictureViewHolder pictureViewHolder = new PictureViewHolder(view);
-        pictureViewHolder.ownerName.setText("NAME OF OWNER");
-        //assign picture
 
         viewHolderCount++;
 

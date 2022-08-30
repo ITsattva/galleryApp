@@ -34,6 +34,7 @@ public class MainActivity extends AppCompatActivity {
     PictureAdapter pictureAdapter;
     EditText searchField;
     Button searchButton;
+    Picture[] pictures;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -47,45 +48,17 @@ public class MainActivity extends AppCompatActivity {
         LinearLayoutManager layoutManager = new LinearLayoutManager(this);
         picturesList.setLayoutManager(layoutManager);
         picturesList.setHasFixedSize(true);
-//        pictureAdapter = new PictureAdapter(100);
-//        picturesList.setAdapter(pictureAdapter);
+        pictureAdapter = new PictureAdapter(10, new Picture[]{});
 
         View.OnClickListener onClickListener = new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 URL generatedURL = generateUrl(searchField.getText().toString());
                 new UnsplashQueryTask().execute(generatedURL);
-                pictureAdapter = new PictureAdapter(100);
-                picturesList.setAdapter(pictureAdapter);
             }
         };
 
         searchButton.setOnClickListener(onClickListener);
-    }
-
-    class DownloadHandler extends AsyncTask<String, Void, Bitmap> {
-        ImageView imageView;
-
-        public DownloadHandler(ImageView imageView) {
-            this.imageView=imageView;
-            Toast.makeText(getApplicationContext(), "Please wait, it may take a few seconds...",Toast.LENGTH_SHORT).show();
-        }
-        protected Bitmap doInBackground(String... urls) {
-            System.out.println("Download has been started...");
-            String imageURL=urls[0];
-            Bitmap bimage=null;
-            try {
-                InputStream in=new java.net.URL(imageURL).openStream();
-                bimage= BitmapFactory.decodeStream(in);
-            } catch (Exception e) {
-                Log.e("Error Message", e.getMessage());
-                e.printStackTrace();
-            }
-            return bimage;
-        }
-        protected void onPostExecute(Bitmap result) {
-            imageView.setImageBitmap(result);
-        }
     }
 
     class UnsplashQueryTask extends AsyncTask<URL, Void, String> {
@@ -109,6 +82,8 @@ public class MainActivity extends AppCompatActivity {
                     System.out.println("Getting json array");
                     JSONArray array = object.getJSONArray("results");
                     System.out.println("parsing json array");
+                    pictures = convertJsonToPictureArray(array);
+                    showResultImages();
                 } catch (JSONException e) {
                     e.printStackTrace();
                 }
@@ -123,21 +98,27 @@ public class MainActivity extends AppCompatActivity {
         }
 
         private void showResultImages() {
-            //todo
+            pictureAdapter = new PictureAdapter(10, pictures);
+            System.out.println("adapter created");
+            picturesList.setAdapter(pictureAdapter);
+            System.out.println("adapter assigned");
         }
 
         private Picture getPictureEntity(JSONObject jsonObject) throws JSONException {
             System.out.println("Getting picture entity");
             JSONObject userObject = jsonObject.getJSONObject("user");
-            String author = userObject.getString("name");
+            String author = userObject.getString("first_name") + " " + userObject.getString("last_name");
             JSONObject urlsObject = jsonObject.getJSONObject("urls");
             String linkToSmallSize = urlsObject.getString("small");
             String linkToBigSize = urlsObject.getString("full");;
+
+            System.out.println(author+"\n"+linkToSmallSize+"\n"+linkToBigSize+"\n");
 
             return new Picture(author, linkToSmallSize, linkToBigSize);
         }
 
         private Picture[] convertJsonToPictureArray(JSONArray jsonArray) throws JSONException {
+            System.out.println("Json Array size is: " + jsonArray.length());
             Picture[] pictures = new Picture[jsonArray.length()];
             for(int i = 0; i<jsonArray.length(); i++){
                 pictures[i] = getPictureEntity(jsonArray.getJSONObject(i));

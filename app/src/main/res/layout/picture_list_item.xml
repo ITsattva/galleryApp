@@ -7,7 +7,6 @@
 
     <ImageView
         android:id="@+id/iv_small_picture"
-        android:src="@drawable/ic_launcher_background"
         android:layout_gravity="center_vertical|center_horizontal"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"/>

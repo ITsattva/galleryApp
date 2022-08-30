@@ -13,6 +13,7 @@ import android.view.TextureView;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ProgressBar;
 import android.widget.TextView;
 
 import com.gallery.unsplashapp.adapters.PictureAdapter;
@@ -31,6 +32,8 @@ public class MainActivity extends AppCompatActivity {
     PictureAdapter pictureAdapter;
     EditText searchField;
     TextView errorMessage;
+    TextView noResultMessage;
+    ProgressBar loadingIndicator;
     Button searchButton;
     Picture[] pictures;
 
@@ -43,6 +46,8 @@ public class MainActivity extends AppCompatActivity {
         searchField = findViewById(R.id.et_search_field);
         searchButton = findViewById(R.id.b_search);
         errorMessage = findViewById(R.id.tv_error_message);
+        noResultMessage = findViewById(R.id.tv_no_result_message);
+        loadingIndicator = findViewById(R.id.pb_loading);
 
         LinearLayoutManager layoutManager = new LinearLayoutManager(this);
         picturesList.setLayoutManager(layoutManager);
@@ -63,7 +68,7 @@ public class MainActivity extends AppCompatActivity {
         @Override
         protected String doInBackground(URL... urls) {
             String response = null;
-            try{
+            try {
                 response = getResponseFromURL(urls[0]);
             } catch (IOException e) {
                 e.printStackTrace();
@@ -72,13 +77,25 @@ public class MainActivity extends AppCompatActivity {
         }
 
         @Override
-        protected void onPostExecute(String response){
-            if(response != null && !response.equals("")) {
+        protected void onPreExecute() {
+            super.onPreExecute();
+            loadingIndicator.setVisibility(View.VISIBLE);
+        }
+
+
+        @Override
+        protected void onPostExecute(String response) {
+            if (response != null && !response.equals("")) {
                 try {
                     JSONObject object = new JSONObject(response);
                     JSONArray array = object.getJSONArray("results");
                     pictures = convertJsonToPictureArray(array);
-                    showResultImages();
+
+                    if (pictures.length == 0) {
+                        showNoResultMessage();
+                    } else {
+                        showResultImages();
+                    }
                 } catch (JSONException e) {
                     showErrorTextView();
                     e.printStackTrace();
@@ -86,16 +103,32 @@ public class MainActivity extends AppCompatActivity {
             } else {
                 showErrorTextView();
             }
+            loadingIndicator.setVisibility(View.INVISIBLE);
         }
 
-        private void showErrorTextView(){
+        @Override
+        protected void onProgressUpdate(Void... values) {
+            super.onProgressUpdate(values);
+        }
+
+        private void showErrorTextView() {
+            noResultMessage.setVisibility(View.INVISIBLE);
             errorMessage.setVisibility(View.VISIBLE);
+            picturesList.setVisibility(View.INVISIBLE);
         }
 
         private void showResultImages() {
+            noResultMessage.setVisibility(View.INVISIBLE);
             errorMessage.setVisibility(View.INVISIBLE);
+            picturesList.setVisibility(View.VISIBLE);
             pictureAdapter = new PictureAdapter(100, pictures);
             picturesList.setAdapter(pictureAdapter);
+        }
+
+        private void showNoResultMessage() {
+            errorMessage.setVisibility(View.INVISIBLE);
+            picturesList.setVisibility(View.INVISIBLE);
+            noResultMessage.setVisibility(View.VISIBLE);
         }
 
         private Picture getPictureEntity(JSONObject jsonObject) throws JSONException {
@@ -103,23 +136,25 @@ public class MainActivity extends AppCompatActivity {
             String firstName = userObject.getString("first_name");
             String lastName = userObject.getString("last_name");
 
-            String author =  firstName + (lastName.equals("null") ? "" : lastName);
+            String author = firstName + (lastName.equals("null") ? "" : " " + lastName);
             JSONObject urlsObject = jsonObject.getJSONObject("urls");
             String linkToSmallSize = urlsObject.getString("small");
-            String linkToBigSize = urlsObject.getString("full");;
+            String linkToBigSize = urlsObject.getString("full");
+            ;
 
-            System.out.println(author+"\n"+linkToSmallSize+"\n"+linkToBigSize+"\n");
+            System.out.println(author + "\n" + linkToSmallSize + "\n" + linkToBigSize + "\n");
 
             return new Picture(author, linkToSmallSize, linkToBigSize);
         }
 
         private Picture[] convertJsonToPictureArray(JSONArray jsonArray) throws JSONException {
+
             Picture[] pictures = new Picture[jsonArray.length()];
-            for(int i = 0; i<jsonArray.length(); i++){
+            for (int i = 0; i < jsonArray.length(); i++) {
                 pictures[i] = getPictureEntity(jsonArray.getJSONObject(i));
             }
-
             return pictures;
+
         }
 
 
